@@ -66,31 +66,31 @@ public class DBHandler {
 	 * @param sql - an SQL statement to be sent to the database, <u>typically a static SQL SELECT statement</u>
 	 * @return a ResultSet object that contains the data produced by the given query; never null
 	 * @throws SQLException - if a database access error occurs, this method is called on a closed Statement,
-	 *						the given SQL statement produces anything other than a single ResultSet object,
-	 *						the method is called on a PreparedStatement or CallableStatement
+	 * the given SQL statement produces anything other than a single ResultSet object,
+	 * the method is called on a PreparedStatement or CallableStatement
 	 */
 	public ResultSet exceute(String sql) throws SQLException {		
 		Statement stmt = _con.createStatement();
 		ResultSet rs = stmt.executeQuery(sql);
-        stmt.close();
+		stmt.close();
         
 		return rs;
 	}
 	
 	/**
-	 *  Execute sql and return the manipulated rows count
+	 * Execute sql and return the manipulated rows count
 	 * @param sql - an SQL Data Manipulation Language (DML) statement,<br>
-	 * 				such as <u>INSERT, UPDATE or DELETE;</u> or an SQL statement that returns nothing, such as a DDL statement.
+	 * such as <u>INSERT, UPDATE or DELETE;</u> or an SQL statement that returns nothing, such as a DDL statement.
 	 * @return either (1) the row count for SQL Data Manipulation Language (DML) statements or<br>
-	 * 			(2) 0 for SQL statements that return nothing
+	 * (2) the value 0 for SQL statements that return nothing
 	 * @throws SQLException - if a database access error occurs, this method is called on a closed Statement,
-	 *						the given SQL statement produces a ResultSet object,
-	 *						the method is called on a PreparedStatement or CallableStatement
+	 * the given SQL statement produces a ResultSet object,
+	 * the method is called on a PreparedStatement or CallableStatement
 	 */
 	public int executeUpdate(String sql) throws SQLException {
 		Statement stmt = _con.createStatement();
 		int count = stmt.executeUpdate(sql);
-        stmt.close();
+		stmt.close();
 
 		return count;
 	}
@@ -101,13 +101,13 @@ public class DBHandler {
 	 */
 	public void createTableUsers() throws SQLException {
 		Statement stmt = _con.createStatement();
-        String sql = "CREATE TABLE IF NOT EXISTS USERS " +
-                     "(ID	SERIAL  NOT NULL PRIMARY	KEY," + 
-                     " USER_NAME	TEXT	NOT	NULL, " +
-                     " PASSWORD	TEXT	NOT NULL, " +
-                     " EMAIL	TEXT	NOT NULL)";
-        stmt.executeUpdate(sql);
-        stmt.close();
+		String sql = "CREATE TABLE IF NOT EXISTS USERS " +
+				"(ID	SERIAL  NOT NULL PRIMARY	KEY," + 
+				" USER_NAME	TEXT	NOT	NULL, " +
+				" PASSWORD	TEXT	NOT NULL, " +
+				" EMAIL	TEXT	NOT NULL)";
+		stmt.executeUpdate(sql);
+		stmt.close();
 	}
 	
 	/**
@@ -138,7 +138,6 @@ public class DBHandler {
 		Statement stmt = _con.createStatement(); 
 		String sql = "DROP TABLE USERS";
 		stmt.executeUpdate(sql);
-        stmt.close();
-        
+		stmt.close();
 	}
 }
