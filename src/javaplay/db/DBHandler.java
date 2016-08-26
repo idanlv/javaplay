@@ -20,6 +20,7 @@ public class DBHandler {
 	private String _password;
 	private Connection _con;
 	
+	// TODO: implement all other connection methods
 	public DBHandler (String host, int port, String dbName, String username, String password) {
 		/*
 		 * Please use string format
@@ -62,7 +63,7 @@ public class DBHandler {
 		ResultSet rs = null;
 		try {
 			stmt = _con.createStatement();
-	        rs = stmt.executeQuery(sql);
+			rs = stmt.executeQuery(sql);
 	        stmt.close();
 		} catch ( Exception e ) {
 			_logger.log(Level.SEVERE, e.getClass().getName()+": "+ e.getMessage(), e);
