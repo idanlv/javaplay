@@ -1,10 +1,11 @@
 package javaplay.db;
 
 import java.sql.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class PostgreSQLJDBC {
-	static Logger _logger = Logger.getLogger(PostgreSQLJDBC.class.getName());
+public class DBHandler {
+	static Logger _logger = Logger.getLogger(DBHandler.class.getName());
 	
 	public static final String DB_DRIVER = "org.postgresql.Driver";
 	public static final String DB_ADDRESS_PREFIX = "jdbc:postgresql://";
@@ -19,33 +20,38 @@ public class PostgreSQLJDBC {
 	private String _password;
 	private Connection _con;
 	
-	public PostgreSQLJDBC (String host, int port, String dbName, String username, String password) {
+	public DBHandler (String host, int port, String dbName, String username, String password) {
+		/*
+		 * Please use string format
+		 *	http://alvinalexander.com/blog/post/java/use-string-format-java-string-output
+		 */
+		
 		_connectionString = DB_ADDRESS_PREFIX + host +":"+ port +"/"+ dbName;
 		_username = username;
 		_password = password;
 	}
 	
 	
-	// TODO : throw sql exception
+	// TODO : throw sql exception, check before open
 	public void openDBConnection() {
 		try {
 			Class.forName(DB_DRIVER);
 			_con = DriverManager.getConnection(_connectionString,_username, _password);
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			_logger.log(Level.SEVERE, e.getClass().getName()+": "+ e.getMessage(), e);
 			System.exit(0);
 		}
 		
 	}
 	
-	// TODO : throw sql exception
+	// TODO : throw sql exception, check before close
 	public void closeDBConnection() {
 		try {
 			_con.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
-			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			_logger.log(Level.SEVERE, e.getClass().getName()+": "+ e.getMessage(), e);
 			System.exit(0);
 		}
 	}
@@ -57,10 +63,9 @@ public class PostgreSQLJDBC {
 		try {
 			stmt = _con.createStatement();
 	        rs = stmt.executeQuery(sql);
-	        		stmt.executeUpdate(sql);
 	        stmt.close();
 		} catch ( Exception e ) {
-			System.err.println( e.getClass().getName()+": "+ e.getMessage() );
+			_logger.log(Level.SEVERE, e.getClass().getName()+": "+ e.getMessage(), e);
 			System.exit(0);
 		}
 		return rs;
@@ -72,10 +77,10 @@ public class PostgreSQLJDBC {
 		int count = -1;
 		try {
 			stmt = _con.createStatement();
-	        count = stmt.executeUpdate(sql);
+			count = stmt.executeUpdate(sql);
 	        stmt.close();
 		} catch ( Exception e ) {
-			System.err.println( e.getClass().getName()+": "+ e.getMessage() );
+			_logger.log(Level.SEVERE, e.getClass().getName()+": "+ e.getMessage(), e);
 			System.exit(0);
 		}
 		return count;
@@ -93,7 +98,7 @@ public class PostgreSQLJDBC {
 	        stmt.executeUpdate(sql);
 	        stmt.close();
 		} catch ( Exception e ) {
-			System.err.println( e.getClass().getName()+": "+ e.getMessage() );
+			_logger.log(Level.SEVERE, e.getClass().getName()+": "+ e.getMessage(), e);
 			System.exit(0);
 		}
 		System.out.println("Table created successfully");
