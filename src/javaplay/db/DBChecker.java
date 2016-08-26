@@ -1,19 +1,18 @@
 package javaplay.db;
 
-public class Runner {
+public class DBChecker {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		DBHandler db = new DBHandler(DBHandler.DB_DEFAULT_HOST, DBHandler.DB_DEFAULT_PORT,
 				DBHandler.DB_DEFAULT_NAME, DBHandler.DB_DEFAULT_USER, DBHandler.DB_DEFAULT_PASSWORD);
-		
+
 		db.openDBConnection();
-		System.out.println("Opened database successfully");
-		
-		// run only once
-		//db.createTableUsers();
-		
+		db.dropUsers();
+		db.createTableUsers();
+		db.addUsers(10);
 		db.closeDBConnection();
-		System.out.println("Closed database successfully");
+				
+		System.out.println("Done");
 	}
 
 }
