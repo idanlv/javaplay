@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.logging.Logger;
 
 /**
- *  this is a db access handler for connection management and to executing sql queries
+ *  This is a db access handler for connection management and to executing sql queries
  */
 public class DBHandler {
 	// Logging
@@ -19,7 +19,7 @@ public class DBHandler {
 	public static final String DB_DEFAULT_USER = "postgres";
 	public static final String DB_DEFAULT_PASSWORD = "admin";
 	
-	// members
+	// Class members
 	private String _connectionString;
 	private String _username;
 	private String _password;
@@ -34,7 +34,7 @@ public class DBHandler {
 	}
 	
 	/**
-	 *  Open a db connection
+	 * Open a db connection
 	 * @return True if a connection was set, false otherwise
 	 * @throws SQLException - SQLException if a database access error occurs
 	 */
@@ -54,15 +54,15 @@ public class DBHandler {
 	 */
 	public boolean closeDBConnection() throws SQLException {
 		if (_con != null && !_con.isClosed()) {
-				_con.close();
-				return true;	
+			_con.close();
+			return true;	
 		}
 		return false;
 	}
 	
 	/**
-	 *  Executes the given SQL statement, which returns a single ResultSet object. 
-	 *	<br><b>Note:</b> This method cannot be called on a PreparedStatement or CallableStatement
+	 * Executes the given SQL statement, which returns a single ResultSet object. 
+	 * <br><b>Note:</b> This method cannot be called on a PreparedStatement or CallableStatement
 	 * @param sql - an SQL statement to be sent to the database, <u>typically a static SQL SELECT statement</u>
 	 * @return a ResultSet object that contains the data produced by the given query; never null
 	 * @throws SQLException - if a database access error occurs, this method is called on a closed Statement,
@@ -116,8 +116,7 @@ public class DBHandler {
 	 * @throws SQLException
 	 */
 	public void addUsers(int count) throws SQLException {
-		String sql = "INSERT INTO USERS(USER_NAME, PASSWORD, EMAIL) " +
-						"VALUES(?, ?, ?)";
+		String sql = "INSERT INTO USERS(USER_NAME, PASSWORD, EMAIL) VALUES(?, ?, ?)";
 		PreparedStatement ps = _con.prepareStatement(sql);
 		
 		for (int i = 0; i < count; i++) {
