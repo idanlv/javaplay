@@ -89,10 +89,10 @@ public class DBHandler {
 	 */
 	public int executeUpdate(String sql) throws SQLException {
 		Statement stmt = _con.createStatement();
-		int count = stmt.executeUpdate(sql);
+		int manipulatedRowCount = stmt.executeUpdate(sql);
 		stmt.close();
 
-		return count;
+		return manipulatedRowCount;
 	}
 	
 	/**
