@@ -3,14 +3,14 @@ package javaplay.modules;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 public class UserCredentials {
-	@JsonProperty
-	private String email;
+	@JsonProperty("email")
+	private String _email;
 	
-	@JsonProperty
-	private String password;
+	@JsonProperty("password")
+	private String _password;
 	
-	@JsonProperty
-	private String username;
+	@JsonProperty("username")
+	private String _username;
 	
 	/**
 	 * Empty Constructor for deserializer
@@ -25,32 +25,32 @@ public class UserCredentials {
 	 * @param password user's password
 	 */
 	public UserCredentials(String email, String username, String password) {
-		this.email = email;
-		this.username = username;
-		this.password = password;
+		this._email = email;
+		this._username = username;
+		this._password = password;
 	}
 	
 	public String getEmail() {
-		return this.email;
+		return this._email;
 	}
 	
 	public void setEmail(String email) {
-		this.email = email;
+		this._email = email;
 	}
 	
 	public String getPassword() {
-		return this.password;
+		return this._password;
 	}
 	
 	public void setPassword(String password) {
-		this.password = password;
+		this._password = password;
 	}
 	
 	public String getUsername() {
-		return this.username;
+		return this._username;
 	}
 	
 	public void setUsername(String username) {
-		this.username = username;
+		this._username = username;
 	}
 }

@@ -10,7 +10,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-
+import javaplay.businesslogic.User;
 import javaplay.modules.UserCredentials;
 
 @Path("/user")
@@ -25,18 +25,14 @@ public class UserService {
 		try {
 			_logger.log(Level.FINE, "Handling new sign up request: {0}", credentials);
 			
-			// TODO: Check if user's email already exists in database 
-			boolean email_exists = true;
+			String message = User.signUp(credentials);
 			
-			if (email_exists) {
-				_logger.log(Level.FINE, "User email already exists in database, cancelling signup");
-				return Response.status(403).entity("Email is being used by another user").build();
+			if (message.equals("")) {
+				_logger.log(Level.FINE, "Cancelled signup process");
+				return Response.status(403).entity(message).build();
 			}
 			
-			
-			// TODO: Insert user into database
 			_logger.log(Level.FINE, "Completed signup process");
-			
 			return Response.status(200).entity("Success").build(); 
 		} catch (Exception ex) {
 			_logger.log(Level.SEVERE, ex.toString(), ex);
