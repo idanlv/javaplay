@@ -1,0 +1,10 @@
+{
+	"local": {
+		"jdbc_connection": "jdbc:postgresql://localhost:5432/testdb",
+		"logger_level": "ALL"
+	}, 
+    "production": {
+		"jdbc_connection": "",
+		"logger_level": "ALL"
+    }
+}
