@@ -1,7 +1,12 @@
 package javaplay.db;
 
 import java.sql.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetFactory;
+import javax.sql.rowset.RowSetProvider;
 
 /**
  *  This is a db access handler for connection management and to executing sql queries
@@ -25,21 +30,38 @@ public class DBHandler {
 	private String _password;
 	private Connection _con;
 	
-	// Object constructor
-	public DBHandler (String host, int port, String dbName, String username, String password) {
+	/**
+	 *  DBHandler constructor 
+	 * @param host - db host name or ip
+	 * @param port - db port
+	 * @param dbName - db name
+	 * @param username - db user name
+	 * @param password - db password
+	 * @throws ClassNotFoundException - if the db driver class cannot be located
+	 */
+	public DBHandler (String host, int port, String dbName, String username, String password) throws ClassNotFoundException {
+		
+		try {
+			Class.forName(DB_DRIVER);
+		} catch (ClassNotFoundException ex){
+			_logger.log(Level.SEVERE, "Error: unable to load driver class!");
+			throw ex;
+		}
+		
 		_connectionString = DB_ADDRESS_PREFIX + host +":"+ port +"/"+ dbName;
 		
 		_username = username;
 		_password = password;
+		
+		
 	}
 	
 	/**
 	 * Open a db connection
 	 * @return True if a connection was set, false otherwise
-	 * @throws SQLException - SQLException if a database access error occurs
+	 * @throws SQLException if a database access error occurs
 	 */
 	public boolean openDBConnection() throws SQLException {
-		//Class.forName(DB_DRIVER); - TODO: check if relevant or dead code
 		if (_con == null || _con.isClosed()) {
 			_con = DriverManager.getConnection(_connectionString,_username, _password);
 			return true;
@@ -64,17 +86,27 @@ public class DBHandler {
 	 * Executes the given SQL statement, which returns a single ResultSet object. 
 	 * <br><b>Note:</b> This method cannot be called on a PreparedStatement or CallableStatement
 	 * @param sql - an SQL statement to be sent to the database, <u>typically a static SQL SELECT statement</u>
-	 * @return a ResultSet object that contains the data produced by the given query; never null
+	 * @return a ResultSet object that contains the data produced by the given query; never null, based on :<br>
+	 * http://stackoverflow.com/questions/1910049/where-to-close-a-jdbc-connection-while-i-want-to-return-the-resultset<br>
+	 * http://stackoverflow.com/questions/14853508/returning-a-resultset<br>
+	 * http://stackoverflow.com/questions/8066501/how-should-i-use-try-with-resources-with-jdbc<br>
+	 * http://stackoverflow.com/questions/8217493/implementations-of-rowset-cachedrowset-etc
 	 * @throws SQLException - if a database access error occurs, this method is called on a closed Statement,
 	 * the given SQL statement produces anything other than a single ResultSet object,
 	 * the method is called on a PreparedStatement or CallableStatement
 	 */
 	public ResultSet exceute(String sql) throws SQLException {		
+		// Using RowSetFactory for CachedRowSet implementation
+		RowSetFactory rowSetFactory = RowSetProvider.newFactory();
+		CachedRowSet crs = rowSetFactory.createCachedRowSet();
+		
 		Statement stmt = _con.createStatement();
 		ResultSet rs = stmt.executeQuery(sql);
+		crs.populate(rs);
+		
 		stmt.close();
         
-		return rs;
+		return crs;
 	}
 	
 	/**
