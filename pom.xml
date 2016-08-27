@@ -3,6 +3,8 @@
   <groupId>JavaPlay</groupId>
   <artifactId>JavaPlay</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <packaging>war</packaging>
+
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
@@ -10,17 +12,40 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.5.1</version>
         <configuration>
-          <source/>
-          <target/>
-        </configuration>
-      </plugin>
-    </plugins>
+		  <source>1.8</source>
+		  <target>1.8</target>
+		</configuration>
+	  </plugin>
+	  <plugin>
+	    <artifactId>maven-war-plugin</artifactId>
+	    <version>2.3</version>
+	      <configuration>
+	        <warSourceDirectory>WebContent</warSourceDirectory>
+	        <failOnMissingWebXml>false</failOnMissingWebXml>
+	      </configuration>
+	    </plugin>
+      </plugins>
   </build>
   <dependencies>
-  	<dependency>
-  		<groupId>org.postgresql</groupId>
-  		<artifactId>postgresql</artifactId>
-  		<version>9.4.1209.jre7</version>
-  	</dependency>
+	<dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-server</artifactId>
+      <version>1.9</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-client</artifactId>
+      <version>1.9</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-json</artifactId>
+      <version>1.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>9.4.1209.jre7</version>
+    </dependency>
   </dependencies>
 </project>
