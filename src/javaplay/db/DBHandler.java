@@ -37,16 +37,10 @@ public class DBHandler {
 	 * @param dbName - db name
 	 * @param username - db user name
 	 * @param password - db password
-	 * @throws ClassNotFoundException - if the db driver class cannot be located
+
 	 */
 	public DBHandler (String host, int port, String dbName, String username, String password) throws ClassNotFoundException {
-		
-		try {
-			Class.forName(DB_DRIVER);
-		} catch (ClassNotFoundException ex){
-			_logger.log(Level.SEVERE, "Error: unable to load driver class!");
-			throw ex;
-		}
+		init();
 		
 		_connectionString = DB_ADDRESS_PREFIX + host +":"+ port +"/"+ dbName;
 		
@@ -57,9 +51,22 @@ public class DBHandler {
 	}
 	
 	/**
+	 * Initialize db driver
+	 * @throws ClassNotFoundException - if the db driver class cannot be located
+	 */
+	private void init() throws ClassNotFoundException {
+		try {
+			Class.forName(DB_DRIVER);
+		} catch (ClassNotFoundException ex){
+			_logger.log(Level.SEVERE, "Error: unable to load db driver class \"" + DB_DRIVER + "\"");
+			throw ex;
+		}
+	}
+	
+	/**
 	 * Open a db connection
 	 * @return True if a connection was set, false otherwise
-	 * @throws SQLException if a database access error occurs
+	 * @throws SQLException - if a database access error occurs
 	 */
 	public boolean openDBConnection() throws SQLException {
 		if (_con == null || _con.isClosed()) {
