@@ -23,16 +23,16 @@ public class UserService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response postSignUp(UserCredentials credentials) {
 		try {
-			_logger.log(Level.FINE, "Handling new sign up request: {0}", credentials);
+			_logger.log(Level.INFO, "Handling new sign up request: {0}", credentials);
 			
-			String message = User.signUp(credentials);
+			boolean success = User.signUp(credentials);
 			
-			if (!message.equals("")) {
-				_logger.log(Level.FINE, "Cancelled signup process");
-				return Response.status(403).entity(message).build();
+			if (!success) {
+				_logger.log(Level.INFO, "Cancelled signup process");
+				return Response.status(403).entity("Failed").build();
 			}
 			
-			_logger.log(Level.FINE, "Completed signup process");
+			_logger.log(Level.INFO, "Completed signup process");
 			return Response.status(200).entity("Success").build(); 
 		} catch (Exception ex) {
 			_logger.log(Level.SEVERE, ex.toString(), ex);

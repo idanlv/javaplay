@@ -18,7 +18,7 @@ public class User {
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
 	 */
-	public static String signUp(UserCredentials credentials) throws SQLException, ClassNotFoundException {
+	public static boolean signUp(UserCredentials credentials) throws SQLException {
 		DBHandler db = new DBHandler(DBHandler.DB_DEFAULT_HOST, DBHandler.DB_DEFAULT_PORT,
 				DBHandler.DB_DEFAULT_NAME, DBHandler.DB_DEFAULT_USER, DBHandler.DB_DEFAULT_PASSWORD);
 		
@@ -35,22 +35,8 @@ public class User {
 			boolean email_exists = (result.getInt("rowCount") == 1); 
 			
 			if (email_exists) {
-				_logger.log(Level.FINE, "User email already exists in database, cancelling signup");
-				return "Email is being used by another user";
-			}
-			
-			// Checks if another user exists with the same username
-			String username_query = 
-					String.format("SELECT COUNT(*) AS rowCount FROM USERS WHERE user_name = '%s'", credentials.getUsername());
-			
-			result = db.exceute(username_query);
-			result.next();
-			
-			boolean username_exists = (result.getInt("rowCount") == 1); 
-			
-			if (username_exists) {
-				_logger.log(Level.FINE, "Username already exists in database, cancelling signup");
-				return "Username is being used by another user";
+				_logger.log(Level.INFO, "User email already exists in database");
+				return false;
 			}
 			
 			// Saves user's credentials in database
@@ -60,7 +46,7 @@ public class User {
 			db.executeUpdate(signup_insert);
 			db.closeDBConnection();
 			
-			return "";
+			return true;
 		
 		} finally {
 			db.closeConnection();
