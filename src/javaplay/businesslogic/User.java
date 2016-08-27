@@ -18,7 +18,7 @@ public class User {
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
 	 */
-	public static boolean signUp(UserCredentials credentials) throws SQLException {
+	public static boolean signUp(UserCredentials credentials) throws SQLException, ClassNotFoundException {
 		DBHandler db = new DBHandler(DBHandler.DB_DEFAULT_HOST, DBHandler.DB_DEFAULT_PORT,
 				DBHandler.DB_DEFAULT_NAME, DBHandler.DB_DEFAULT_USER, DBHandler.DB_DEFAULT_PASSWORD);
 		
@@ -49,7 +49,7 @@ public class User {
 			return true;
 		
 		} finally {
-			db.closeConnection();
+			db.closeDBConnection();
 		}
 	}
 }
