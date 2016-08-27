@@ -50,7 +50,6 @@ public class Keys {
 	 * @throws IOException in case can't read keys file
 	 * @throws ParseException in case keys file isn't a valid JSON file
 	 */
-
 	public static Map<String, String> getMap(String key) throws FileNotFoundException, IOException, ParseException {
 		Object obj = get(key);
 		
@@ -68,8 +67,7 @@ public class Keys {
 		        map.put(innerKey, value.toString());
 		    }
 		    
-		    return map;
-			
+		    return map;	
 		} else {
 			throw new IllegalArgumentException(String.format("Key '%s' is not a JSONObject object", key));
 		}
