@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,15 +55,13 @@ public class Keys {
 		if (obj instanceof JSONObject) {
 			JSONObject valueObject = (JSONObject)obj;
 			
-		    Map<String, String> map = new HashMap<String, String>();
-
-		    Set keysSet = valueObject.keySet();
+			Map<String, String> map = new HashMap<String, String>();
 		    
-		    for (Object item : keysSet) {		    	
-		    	String innerKey = item.toString();
-		        Object value = valueObject.get(innerKey);
+			for (Object item : valueObject.keySet()) {		    	
+				String innerKey = item.toString();
+				Object value = valueObject.get(innerKey);
 
-		        map.put(innerKey, value.toString());
+				map.put(innerKey, value.toString());
 		    }
 		    
 		    return map;	
