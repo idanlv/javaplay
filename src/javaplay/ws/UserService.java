@@ -27,7 +27,7 @@ public class UserService {
 			
 			String message = User.signUp(credentials);
 			
-			if (message.equals("")) {
+			if (!message.equals("")) {
 				_logger.log(Level.FINE, "Cancelled signup process");
 				return Response.status(403).entity(message).build();
 			}
