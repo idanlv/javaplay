@@ -22,43 +22,48 @@ public class User {
 		DBHandler db = new DBHandler(DBHandler.DB_DEFAULT_HOST, DBHandler.DB_DEFAULT_PORT,
 				DBHandler.DB_DEFAULT_NAME, DBHandler.DB_DEFAULT_USER, DBHandler.DB_DEFAULT_PASSWORD);
 		
-		db.openDBConnection();
-		
-		// Checks if another user exists with the same email
-		String email_query = 
-				String.format("SELECT COUNT(*) AS rowCount FROM USERS WHERE email = '%s'", credentials.getEmail());
-		
-		ResultSet result = db.exceute(email_query);
-		result.next();
-
-		boolean email_exists = (result.getInt("rowCount") == 1); 
-		
-		if (email_exists) {
-			_logger.log(Level.FINE, "User email already exists in database, cancelling signup");
-			return "Email is being used by another user";
-		}
-		
-		// Checks if another user exists with the same username
-		String username_query = 
-				String.format("SELECT COUNT(*) AS rowCount FROM USERS WHERE user_name = '%s'", credentials.getUsername());
-		
-		result = db.exceute(username_query);
-		result.next();
-		
-		boolean username_exists = (result.getInt("rowCount") == 1); 
-		
-		if (username_exists) {
-			_logger.log(Level.FINE, "Username already exists in database, cancelling signup");
-			return "Username is being used by another user";
-		}
-		
-		// Saves user's credentials in database
-		String signup_insert = String.format("INSERT INTO USERS (EMAIL, PASSWORD, USER_NAME) VALUES ('%s', '%s', '%s')", 
-				credentials.getEmail(), credentials.getPassword(), credentials.getUsername());
+		try {
+			db.openDBConnection();
+			
+			// Checks if another user exists with the same email
+			String email_query = 
+					String.format("SELECT COUNT(*) AS rowCount FROM USERS WHERE email = '%s'", credentials.getEmail());
+			
+			ResultSet result = db.exceute(email_query);
+			result.next();
 	
-		db.executeUpdate(signup_insert);
-		db.closeDBConnection();
+			boolean email_exists = (result.getInt("rowCount") == 1); 
+			
+			if (email_exists) {
+				_logger.log(Level.FINE, "User email already exists in database, cancelling signup");
+				return "Email is being used by another user";
+			}
+			
+			// Checks if another user exists with the same username
+			String username_query = 
+					String.format("SELECT COUNT(*) AS rowCount FROM USERS WHERE user_name = '%s'", credentials.getUsername());
+			
+			result = db.exceute(username_query);
+			result.next();
+			
+			boolean username_exists = (result.getInt("rowCount") == 1); 
+			
+			if (username_exists) {
+				_logger.log(Level.FINE, "Username already exists in database, cancelling signup");
+				return "Username is being used by another user";
+			}
+			
+			// Saves user's credentials in database
+			String signup_insert = String.format("INSERT INTO USERS (EMAIL, PASSWORD, USER_NAME) VALUES ('%s', '%s', '%s')", 
+					credentials.getEmail(), credentials.getPassword(), credentials.getUsername());
 		
-		return "";
+			db.executeUpdate(signup_insert);
+			db.closeDBConnection();
+			
+			return "";
+		
+		} finally {
+			db.closeConnection();
+		}
 	}
 }
