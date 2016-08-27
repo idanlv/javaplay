@@ -1,21 +1,25 @@
 package javaplay.modules;
 
 public class UserCredentials {
-	private String _email;
-	private String _password;
+	public String email;
+	public String password;
 	
-	public UserCredentials(String email, String password) {
-		_email = email;
-		_password = password;
+	public UserCredentials() {
 	}
 	
 	public String getEmail() {
-		return _email;
+		return this.email;
+	}
+	
+	public void setEmail(String email) {
+		this.email = email;
 	}
 	
 	public String getPassword() {
-		return _password;
+		return this.password;
 	}
 	
-	
+	public void setPassword(String password) {
+		this.password = password;
+	}
 }
