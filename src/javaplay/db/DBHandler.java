@@ -68,7 +68,7 @@ public class DBHandler {
 	 * @return True if a connection was set, false otherwise
 	 * @throws SQLException - if a database access error occurs
 	 */
-	public boolean openDBConnection() throws SQLException {
+	private boolean openDBConnection() throws SQLException {
 		if (_con == null || _con.isClosed()) {
 			_con = DriverManager.getConnection(_connectionString,_username, _password);
 			return true;
@@ -81,10 +81,10 @@ public class DBHandler {
 	 * @return True if close was set, false otherwise 
 	 * @throws SQLException - SQLException if a database access error occurs
 	 */
-	public boolean closeDBConnection() throws SQLException {
-		if (_con != null && !_con.isClosed()) {
+	private boolean closeDBConnection() throws SQLException {
+		if (_con != null ) {
 			_con.close();
-			return true;	
+			return true;
 		}
 		return false;
 	}
@@ -105,14 +105,21 @@ public class DBHandler {
 	public ResultSet exceute(String sql) throws SQLException {		
 		// Using RowSetFactory for CachedRowSet implementation
 		RowSetFactory rowSetFactory = RowSetProvider.newFactory();
-		CachedRowSet crs = rowSetFactory.createCachedRowSet();
 		
-		Statement stmt = _con.createStatement();
-		ResultSet rs = stmt.executeQuery(sql);
-		crs.populate(rs);
+		Statement stmt = null;
+		ResultSet rs = null;
+		CachedRowSet crs = rowSetFactory.createCachedRowSet();;
 		
-		stmt.close();
-        
+		try {
+			openDBConnection();
+			stmt = _con.createStatement();
+			rs = stmt.executeQuery(sql);
+			crs.populate(rs);
+		} finally {
+			if (stmt != null) {stmt.close();}
+			if (rs != null) {rs.close();}
+			closeDBConnection();
+		}
 		return crs;
 	}
 	
@@ -127,9 +134,17 @@ public class DBHandler {
 	 * the method is called on a PreparedStatement or CallableStatement
 	 */
 	public int executeUpdate(String sql) throws SQLException {
-		Statement stmt = _con.createStatement();
-		int manipulatedRowCount = stmt.executeUpdate(sql);
-		stmt.close();
+		Statement stmt = null;
+		int manipulatedRowCount = -1;
+		
+		try {
+			openDBConnection();
+			stmt = _con.createStatement();
+			manipulatedRowCount = stmt.executeUpdate(sql);			
+		} finally {
+			if (stmt != null) {stmt.close();}
+			closeDBConnection();
+		}
 
 		return manipulatedRowCount;
 	}
@@ -139,14 +154,20 @@ public class DBHandler {
 	 * @throws SQLException
 	 */
 	public void createTableUsers() throws SQLException {
-		Statement stmt = _con.createStatement();
-		String sql = "CREATE TABLE IF NOT EXISTS USERS " +
-				"(ID	SERIAL  NOT NULL PRIMARY	KEY," + 
-				" USER_NAME	TEXT	NOT	NULL, " +
-				" PASSWORD	TEXT	NOT NULL, " +
-				" EMAIL	TEXT	NOT NULL)";
-		stmt.executeUpdate(sql);
-		stmt.close();
+		Statement stmt = null; 
+		try {
+			openDBConnection();
+			stmt = _con.createStatement();
+			String sql = "CREATE TABLE IF NOT EXISTS USERS " +
+					"(ID	SERIAL  NOT NULL PRIMARY	KEY," + 
+					" USER_NAME	TEXT	NOT	NULL, " +
+					" PASSWORD	TEXT	NOT NULL, " +
+					" EMAIL	TEXT	NOT NULL)";
+			stmt.executeUpdate(sql);
+		} finally {
+			if (stmt != null) {stmt.close();}
+			closeDBConnection();
+		}
 	}
 	
 	/**
@@ -155,17 +176,24 @@ public class DBHandler {
 	 * @throws SQLException
 	 */
 	public void addUsers(int count) throws SQLException {
-		String sql = "INSERT INTO USERS(USER_NAME, PASSWORD, EMAIL) VALUES(?, ?, ?)";
-		PreparedStatement ps = _con.prepareStatement(sql);
+		PreparedStatement ps = null;
 		
-		for (int i = 0; i < count; i++) {
-			ps.setString(1, "User" + i);
-			ps.setString(2, "Pass" + i);
-			ps.setString(3, "user" + i +"@mail.com");
-			ps.addBatch();
+		try {
+			openDBConnection();
+			String sql = "INSERT INTO USERS(USER_NAME, PASSWORD, EMAIL) VALUES(?, ?, ?)";
+			ps = _con.prepareStatement(sql);
+			
+			for (int i = 0; i < count; i++) {
+				ps.setString(1, "User" + i);
+				ps.setString(2, "Pass" + i);
+				ps.setString(3, "user" + i +"@mail.com");
+				ps.addBatch();
+			}
+			ps.executeBatch();
+		} finally {
+			if (ps != null) {ps.close();}
+			closeDBConnection();
 		}
-		ps.executeBatch();
-		ps.close();
 	}
 	
 	/**
@@ -173,9 +201,15 @@ public class DBHandler {
 	 * @throws SQLException
 	 */
 	public void dropUsers() throws SQLException {
-		Statement stmt = _con.createStatement(); 
-		String sql = "DROP TABLE USERS";
-		stmt.executeUpdate(sql);
-		stmt.close();
+		Statement stmt = null;
+		try {
+			openDBConnection();
+			stmt = _con.createStatement();
+			String sql = "DROP TABLE USERS";
+			stmt.executeUpdate(sql);
+		} finally {
+			if (stmt != null) {stmt.close();}
+			closeDBConnection();
+		}
 	}
 }
