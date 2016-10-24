@@ -116,8 +116,8 @@ public class DBHandler {
 			rs = stmt.executeQuery(sql);
 			crs.populate(rs);
 		} finally {
-			if (stmt != null) {stmt.close();}
 			if (rs != null) {rs.close();}
+			if (stmt != null) {stmt.close();}
 			closeDBConnection();
 		}
 		return crs;
