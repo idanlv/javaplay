@@ -1,12 +1,20 @@
 package javaplay.db;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.*;
+import java.util.Date;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetFactory;
 import javax.sql.rowset.RowSetProvider;
+
+import org.json.simple.parser.ParseException;
+
+import javaplay.utils.Keys;
 
 /**
  *  This is a db access handler for connection management and to executing sql queries
@@ -17,12 +25,6 @@ public class DBHandler {
 	
 	// Constants for db access
 	public static final String DB_DRIVER = "org.postgresql.Driver";
-	public static final String DB_ADDRESS_PREFIX = "jdbc:postgresql://";
-	public static final String DB_DEFAULT_HOST = "localhost";
-	public static final int DB_DEFAULT_PORT = 5432;
-	public static final String DB_DEFAULT_NAME = "testdb";
-	public static final String DB_DEFAULT_USER = "postgres";
-	public static final String DB_DEFAULT_PASSWORD = "admin";
 	
 	// Class members
 	private String _connectionString;
@@ -32,22 +34,21 @@ public class DBHandler {
 	
 	/**
 	 *  DBHandler constructor 
-	 * @param host - db host name or ip
-	 * @param port - db port
-	 * @param dbName - db name
-	 * @param username - db user name
-	 * @param password - db password
-
+	 * @throws ParseException 
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
 	 */
-	public DBHandler (String host, int port, String dbName, String username, String password) throws ClassNotFoundException {
-		init();
+	public DBHandler () throws ClassNotFoundException, FileNotFoundException, IOException, ParseException {
+		//init();
 		
-		_connectionString = DB_ADDRESS_PREFIX + host +":"+ port +"/"+ dbName;
+		Map<String, String> db_keys = Keys.getMap("db_connection");
 		
-		_username = username;
-		_password = password;
-		
-		
+		_connectionString = String.format("jdbc:%s://%s/%s?user=%s&password=%s", 
+				db_keys.get("driver"),
+				db_keys.get("host"),
+				db_keys.get("database"),
+				db_keys.get("user"),
+				db_keys.get("password"));
 	}
 	
 	/**
@@ -70,7 +71,7 @@ public class DBHandler {
 	 */
 	private boolean openDBConnection() throws SQLException {
 		if (_con == null || _con.isClosed()) {
-			_con = DriverManager.getConnection(_connectionString,_username, _password);
+			_con = DriverManager.getConnection(_connectionString);
 			return true;
 		}
 		return false;
@@ -171,45 +172,34 @@ public class DBHandler {
 	}
 	
 	/**
-	 * add x number of demo users
-	 * @param count for number of users
+	 * Adds login audit into databases
+	 * @param loginDate
+	 * @param ip
+	 * @param deviceId
 	 * @throws SQLException
 	 */
-	public void addUsers(int count) throws SQLException {
-		PreparedStatement ps = null;
+	public void addLogin(Date loginDate, String ip, String deviceId) throws SQLException {
+		PreparedStatement insertLogin = null;
 		
 		try {
 			openDBConnection();
-			String sql = "INSERT INTO USERS(USER_NAME, PASSWORD, EMAIL) VALUES(?, ?, ?)";
-			ps = _con.prepareStatement(sql);
+			String sql = "INSERT INTO LOGIN_EVENTS (LOGIN_DATE, IP, DEVICE_ID) VALUES (?, ?, ?)";
+			insertLogin = _con.prepareStatement(sql);
 			
-			for (int i = 0; i < count; i++) {
-				ps.setString(1, "User" + i);
-				ps.setString(2, "Pass" + i);
-				ps.setString(3, "user" + i +"@mail.com");
-				ps.addBatch();
-			}
-			ps.executeBatch();
+        	insertLogin.setDate(1, java.sql.Date.valueOf(loginDate.toString()));
+        	insertLogin.setString(2, ip);
+        	insertLogin.setString(3, deviceId);
+
+			insertLogin.executeBatch();
 		} finally {
-			if (ps != null) {ps.close();}
+			if (insertLogin != null) {insertLogin.close();}
 			closeDBConnection();
 		}
 	}
-	
-	/**
-	 * clear user table
-	 * @throws SQLException
-	 */
-	public void dropUsers() throws SQLException {
-		Statement stmt = null;
-		try {
-			openDBConnection();
-			stmt = _con.createStatement();
-			String sql = "DROP TABLE USERS";
-			stmt.executeUpdate(sql);
-		} finally {
-			if (stmt != null) {stmt.close();}
-			closeDBConnection();
-		}
+
+	public ResultSet loadLogins(int count) throws SQLException {	
+		String sql = String.format("SELECT * FROM LOGIN_EVENTS ORDER BY LOGIN_DATE LIMIT %d", count);
+		
+		return exceute(sql);
 	}
 }

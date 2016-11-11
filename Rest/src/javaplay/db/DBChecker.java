@@ -9,7 +9,7 @@ public class DBChecker {
 		db.exceute("Select * from users");
 		db.dropUsers();
 		db.createTableUsers();
-		db.addUsers(10);
+		db.addLogin(10);
 
 		System.out.println("Done");
 	}
