@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.*;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,17 +20,17 @@ import javaplay.utils.Keys;
 /**
  *  This is a db access handler for connection management and to executing sql queries
  */
-public class DBHandler {
-	// Logging
-	static Logger _logger = Logger.getLogger(DBHandler.class.getName());
+public class DatabaseAccess {
+	/**
+	 * Static 
+	 */
+	private static Logger _logger = Logger.getLogger(DatabaseAccess.class.getName());
+	private static DatabaseAccess mInstance;
 	
-	// Constants for db access
-	public static final String DB_DRIVER = "org.postgresql.Driver";
-	
-	// Class members
+	/**
+	 * Members
+	 */
 	private String _connectionString;
-	private String _username;
-	private String _password;
 	private Connection _con;
 	
 	/**
@@ -38,28 +39,36 @@ public class DBHandler {
 	 * @throws IOException 
 	 * @throws FileNotFoundException 
 	 */
-	public DBHandler () throws ClassNotFoundException, FileNotFoundException, IOException, ParseException {
-		//init();
-		
+	private DatabaseAccess () throws ClassNotFoundException, FileNotFoundException, IOException, ParseException {		
 		Map<String, String> db_keys = Keys.getMap("db_connection");
 		
-		_connectionString = String.format("jdbc:%s://%s/%s?user=%s&password=%s", 
+		_connectionString = String.format("jdbc:%s://%s/%s?user=%s&password=%s&useSSL=False", 
 				db_keys.get("driver"),
 				db_keys.get("host"),
 				db_keys.get("database"),
-				db_keys.get("user"),
+				db_keys.get("username"),
 				db_keys.get("password"));
+		
+		init(db_keys.get("jdbc_driver"));
+	}
+	
+	public static DatabaseAccess getInstance() throws ClassNotFoundException, FileNotFoundException, IOException, ParseException {
+		if (mInstance == null) {	
+			mInstance = new DatabaseAccess();
+		}
+		
+		return mInstance;
 	}
 	
 	/**
 	 * Initialize db driver
 	 * @throws ClassNotFoundException - if the db driver class cannot be located
 	 */
-	private void init() throws ClassNotFoundException {
+	private void init(String dbDriver) throws ClassNotFoundException {
 		try {
-			Class.forName(DB_DRIVER);
+			Class.forName(dbDriver);
 		} catch (ClassNotFoundException ex){
-			_logger.log(Level.SEVERE, "Error: unable to load db driver class \"" + DB_DRIVER + "\"");
+			_logger.log(Level.SEVERE, "Error: unable to load db driver class \"" + dbDriver + "\"");
 			throw ex;
 		}
 	}
@@ -71,7 +80,7 @@ public class DBHandler {
 	 */
 	private boolean openDBConnection() throws SQLException {
 		if (_con == null || _con.isClosed()) {
-			_con = DriverManager.getConnection(_connectionString);
+			_con = DriverManager.getConnection(_connectionString);			
 			return true;
 		}
 		return false;
@@ -103,17 +112,22 @@ public class DBHandler {
 	 * the given SQL statement produces anything other than a single ResultSet object,
 	 * the method is called on a PreparedStatement or CallableStatement
 	 */
-	public ResultSet exceute(String sql) throws SQLException {		
+	public ResultSet exceute(String sql, List<Object> parameters) throws SQLException {		
 		// Using RowSetFactory for CachedRowSet implementation
 		RowSetFactory rowSetFactory = RowSetProvider.newFactory();
 		
-		Statement stmt = null;
+		PreparedStatement stmt = null;
 		ResultSet rs = null;
-		CachedRowSet crs = rowSetFactory.createCachedRowSet();;
+		CachedRowSet crs = rowSetFactory.createCachedRowSet();
 		
 		try {
 			openDBConnection();
-			stmt = _con.createStatement();
+			stmt = _con.prepareStatement(sql);
+			
+			for (int i = 0; i < parameters.size(); i++) {
+				addParameter(stmt, i + 1, parameters.get(i));
+			}
+			
 			rs = stmt.executeQuery(sql);
 			crs.populate(rs);
 		} finally {
@@ -123,6 +137,8 @@ public class DBHandler {
 		}
 		return crs;
 	}
+	
+
 	
 	/**
 	 * Execute sql and return the manipulated rows count
@@ -134,13 +150,18 @@ public class DBHandler {
 	 * the given SQL statement produces a ResultSet object,
 	 * the method is called on a PreparedStatement or CallableStatement
 	 */
-	public int executeUpdate(String sql) throws SQLException {
-		Statement stmt = null;
+	public int executeUpdate(String sql, List<Object> parameters) throws SQLException {
+		PreparedStatement stmt = null;
 		int manipulatedRowCount = -1;
 		
 		try {
 			openDBConnection();
-			stmt = _con.createStatement();
+			stmt = _con.prepareStatement(sql);
+			
+			for (int i = 0; i < parameters.size(); i++) {
+				addParameter(stmt, i + 1, parameters.get(i));
+			}
+
 			manipulatedRowCount = stmt.executeUpdate(sql);			
 		} finally {
 			if (stmt != null) {stmt.close();}
@@ -150,56 +171,17 @@ public class DBHandler {
 		return manipulatedRowCount;
 	}
 	
-	/**
-	 * create user table
-	 * @throws SQLException
-	 */
-	public void createTableUsers() throws SQLException {
-		Statement stmt = null; 
+	private void addParameter(PreparedStatement statement, int index, Object parameter) {
 		try {
-			openDBConnection();
-			stmt = _con.createStatement();
-			String sql = "CREATE TABLE IF NOT EXISTS USERS " +
-					"(ID	SERIAL  NOT NULL PRIMARY	KEY," + 
-					" USER_NAME	TEXT	NOT	NULL, " +
-					" PASSWORD	TEXT	NOT NULL, " +
-					" EMAIL	TEXT	NOT NULL)";
-			stmt.executeUpdate(sql);
-		} finally {
-			if (stmt != null) {stmt.close();}
-			closeDBConnection();
+			if (parameter instanceof Integer) {
+				statement.setInt(index, Integer.parseInt(parameter.toString()));
+			} else if (parameter instanceof String) {
+				statement.setString(index, parameter.toString());
+			} else if (parameter instanceof Date) {
+				statement.setDate(index, new java.sql.Date(((Date)parameter).getTime()));
+			}
+		} catch (Exception ex) {
+			_logger.log(Level.SEVERE, "Could not set parameter", ex);
 		}
-	}
-	
-	/**
-	 * Adds login audit into databases
-	 * @param loginDate
-	 * @param ip
-	 * @param deviceId
-	 * @throws SQLException
-	 */
-	public void addLogin(Date loginDate, String ip, String deviceId) throws SQLException {
-		PreparedStatement insertLogin = null;
-		
-		try {
-			openDBConnection();
-			String sql = "INSERT INTO LOGIN_EVENTS (LOGIN_DATE, IP, DEVICE_ID) VALUES (?, ?, ?)";
-			insertLogin = _con.prepareStatement(sql);
-			
-        	insertLogin.setDate(1, java.sql.Date.valueOf(loginDate.toString()));
-        	insertLogin.setString(2, ip);
-        	insertLogin.setString(3, deviceId);
-
-			insertLogin.executeBatch();
-		} finally {
-			if (insertLogin != null) {insertLogin.close();}
-			closeDBConnection();
-		}
-	}
-
-	public ResultSet loadLogins(int count) throws SQLException {	
-		String sql = String.format("SELECT * FROM LOGIN_EVENTS ORDER BY LOGIN_DATE LIMIT %d", count);
-		
-		return exceute(sql);
 	}
 }

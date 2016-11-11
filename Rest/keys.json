@@ -1,6 +1,7 @@
 {
 	"local": {
 		"db_connection": {
+			"jdbc_driver": "com.mysql.cj.jdbc.Driver",
 			"driver": "mysql",
 			"host": "104.154.87.33",
 			"database": "javaplay",
@@ -11,6 +12,7 @@
 	},
 	"production": {
 		"db_connection": {
+			"jdbc_driver": "com.mysql.cj.jdbc.Driver",
 			"driver": "mysql",
 			"host": "104.154.87.33",
 			"database": "javaplay",
