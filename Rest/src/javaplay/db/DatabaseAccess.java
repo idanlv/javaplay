@@ -124,8 +124,10 @@ public class DatabaseAccess {
 			openDBConnection();
 			stmt = _con.prepareStatement(sql);
 			
-			for (int i = 0; i < parameters.size(); i++) {
-				addParameter(stmt, i + 1, parameters.get(i));
+			if (parameters != null) {
+				for (int i = 0; i < parameters.size(); i++) {
+					addParameter(stmt, i + 1, parameters.get(i));
+				}
 			}
 			
 			rs = stmt.executeQuery(sql);
@@ -150,7 +152,7 @@ public class DatabaseAccess {
 	 * the given SQL statement produces a ResultSet object,
 	 * the method is called on a PreparedStatement or CallableStatement
 	 */
-	public int executeUpdate(String sql, List<Object> parameters) throws SQLException {
+	public int executeUpdate(String sql, List<Object> parameters) throws SQLException, NumberFormatException {
 		PreparedStatement stmt = null;
 		int manipulatedRowCount = -1;
 		
@@ -158,8 +160,10 @@ public class DatabaseAccess {
 			openDBConnection();
 			stmt = _con.prepareStatement(sql);
 			
-			for (int i = 0; i < parameters.size(); i++) {
-				addParameter(stmt, i + 1, parameters.get(i));
+			if (parameters != null) {
+				for (int i = 0; i < parameters.size(); i++) {
+					addParameter(stmt, i + 1, parameters.get(i));
+				}
 			}
 
 			manipulatedRowCount = stmt.executeUpdate(sql);			
@@ -171,17 +175,13 @@ public class DatabaseAccess {
 		return manipulatedRowCount;
 	}
 	
-	private void addParameter(PreparedStatement statement, int index, Object parameter) {
-		try {
-			if (parameter instanceof Integer) {
-				statement.setInt(index, Integer.parseInt(parameter.toString()));
-			} else if (parameter instanceof String) {
-				statement.setString(index, parameter.toString());
-			} else if (parameter instanceof Date) {
-				statement.setDate(index, new java.sql.Date(((Date)parameter).getTime()));
-			}
-		} catch (Exception ex) {
-			_logger.log(Level.SEVERE, "Could not set parameter", ex);
+	private void addParameter(PreparedStatement statement, int index, Object parameter) throws NumberFormatException, SQLException {
+		if (parameter instanceof Integer) {
+			statement.setInt(index, Integer.parseInt(parameter.toString()));
+		} else if (parameter instanceof String) {
+			statement.setString(index, parameter.toString());
+		} else if (parameter instanceof Date) {
+			statement.setDate(index, new java.sql.Date(((Date)parameter).getTime()));
 		}
 	}
 }

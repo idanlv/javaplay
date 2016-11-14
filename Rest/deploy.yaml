@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubernetes.io/created-by: |
+      {"kind":"SerializedReference","apiVersion":"v1","reference":{"kind":"ReplicationController","namespace":"default","name":"javaplay-rest","uid":"d4ee27dd-a912-11e6-9977-42010af000ba","apiVersion":"v1","resourceVersion":"18850"}}
+    kubernetes.io/limit-ranger: 'LimitRanger plugin set: cpu request for container
+      javaplay-rest'
+  creationTimestamp: 2016-11-12T20:01:42Z
+  generateName: javaplay-rest-
+  labels:
+    app: javaplay-rest
+    version: 1.0.3
+  name: javaplay-rest-b308l
+  namespace: default
+  ownerReferences:
+  - apiVersion: v1
+    controller: true
+    kind: ReplicationController
+    name: javaplay-rest
+    uid: d4ee27dd-a912-11e6-9977-42010af000ba
+  resourceVersion: "18865"
+  selfLink: /api/v1/namespaces/default/pods/javaplay-rest-b308l
+  uid: d4ef030b-a912-11e6-9977-42010af000ba
+spec:
+  containers:
+  - image: gcr.io/javaplay-18947259/rest:1.0.3
+    imagePullPolicy: IfNotPresent
+    name: javaplay-rest
+    resources:
+      requests:
+        cpu: 100m
+    securityContext:
+      privileged: false
+    terminationMessagePath: /dev/termination-log
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: default-token-x7g3a
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  nodeName: gke-javaplay-cluster-default-pool-50e50472-ohx7
+  restartPolicy: Always
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  volumes:
+  - name: default-token-x7g3a
+    secret:
+      defaultMode: 420
+      secretName: default-token-x7g3a
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: 2016-11-12T20:01:42Z
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: 2016-11-12T20:01:43Z
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: 2016-11-12T20:01:42Z
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: docker://68c3ed609c0b431137a93ed9509145418cd47115a7e26c7c90c0d05bf995b371
+    image: gcr.io/javaplay-18947259/rest:1.0.3
+    imageID: docker://sha256:cd2233447a624a88dd9a308ddab4cbdae209af5b9a30a84018861acb5a426004
+    lastState: {}
+    name: javaplay-rest
+    ready: true
+    restartCount: 0
+    state:
+      running:
+        startedAt: 2016-11-12T20:01:43Z
+  hostIP: 10.142.0.2
+  phase: Running
+  podIP: 10.32.0.16
+  startTime: 2016-11-12T20:01:42Z

@@ -95,7 +95,7 @@ public class Keys {
 		String value = System.getenv(JAVAPLAY_KEYS_FILE);
         
 		if (value == null) {
-			_logger.log(Level.WARNING, "Could not find environment variable '%s', using default instead", JAVAPLAY_KEYS_FILE);
+			_logger.log(Level.WARNING, String.format("Could not find environment variable '%s', using default instead", JAVAPLAY_KEYS_FILE));
 			value = DEFAULT_KEYS_FILE;
 		} 
         
@@ -108,7 +108,7 @@ public class Keys {
 		_environment = System.getenv(JAVAPLAY_ENV);
         
 		if (_environment == null) {
-			_logger.log(Level.WARNING, "Could not find environment variable '%s', using default instead", JAVAPLAY_ENV);
+			_logger.log(Level.WARNING, String.format("Could not find environment variable '%s', using default instead", JAVAPLAY_ENV));
 			_environment = DEFAULT_ENVIRONMENT;
 		}
 	}

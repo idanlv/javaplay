@@ -1,11 +1,19 @@
 package javaplay.businesslogic;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.json.simple.parser.ParseException;
+
+import com.google.gson.annotations.SerializedName;
 
 import javaplay.db.DatabaseAccess;
 
@@ -19,8 +27,10 @@ public class Login {
 	 * Members
 	 */
     @JsonProperty("login")
+    @SerializedName("login")
 	private Date mLogin;
     @JsonProperty("IMEI")
+    @SerializedName("IMEI")
 	private String mIMEI;
     
     /**
@@ -59,21 +69,40 @@ public class Login {
 	/**
 	 * Saves login instance into database
 	 * @return True if the operation was successful, otherwise False
+	 * @throws ParseException 
+	 * @throws IOException 
+	 * @throws SQLException 
+	 * @throws FileNotFoundException 
+	 * @throws ClassNotFoundException 
 	 */
-	public boolean Save() {
-		String sql = "INSERT INTO LOGIN_EVENTS (LOGIN_DATE, IMEI) VALUES ('2016-09-30', '1')";
+	public void Save() throws ClassNotFoundException, FileNotFoundException, SQLException, IOException, ParseException {
+		String sql = "INSERT INTO LOGIN_EVENTS "
+				+ "(LOGIN_DATE, IMEI) "
+				+ "VALUES ( ?, ? )";
 
 		LinkedList<Object> parameters = new LinkedList<Object>();
-		/*parameters.add(0, mLogin);
-		parameters.add(1, mIMEI);*/
+		parameters.addLast(mLogin);
+		parameters.addLast(mIMEI);
 		
-		try {
-			int rows = DatabaseAccess.getInstance().executeUpdate(sql, parameters);
+		
+		DatabaseAccess.getInstance().executeUpdate(sql, parameters);
+	}
+	
+	public static List<Login> loadLogins(int count) throws Exception {
+		String sql = String.format("SELECT LOGIN_DATE, IMEI FROM LOGIN_EVENTS ORDER BY LOGIN_DATE DESC LIMIT %d", count);
+		
+		ResultSet results = DatabaseAccess.getInstance().exceute(sql, null);
+		
+		List<Login> loginResults = new LinkedList<Login>();
+		
+		while (results.next()) {
+			Login login = new Login(
+					new Date(results.getDate("LOGIN_DATE").getTime()), 
+					results.getString("IMEI"));
 			
-			return rows == 1;
-		} catch (Exception ex) {
-			_logger.log(Level.SEVERE, ex.getMessage(), ex);
-			return false;
+			loginResults.add(login);
 		}
+		
+		return loginResults;
 	}
 }
