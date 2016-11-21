@@ -181,7 +181,8 @@ public class DatabaseAccess {
 		} else if (parameter instanceof String) {
 			statement.setString(index, parameter.toString());
 		} else if (parameter instanceof Date) {
-			statement.setDate(index, new java.sql.Date(((Date)parameter).getTime()));
+			java.sql.Date convertedDate = new java.sql.Date(((Date)parameter).getTime());
+			statement.setDate(index, convertedDate);
 		}
 	}
 }

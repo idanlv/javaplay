@@ -29,6 +29,7 @@ public class Login {
     @JsonProperty("login")
     @SerializedName("login")
 	private Date mLogin;
+    
     @JsonProperty("IMEI")
     @SerializedName("IMEI")
 	private String mIMEI;
@@ -76,13 +77,14 @@ public class Login {
 	 * @throws ClassNotFoundException 
 	 */
 	public void Save() throws ClassNotFoundException, FileNotFoundException, SQLException, IOException, ParseException {
-		String sql = "INSERT INTO LOGIN_EVENTS "
-				+ "(LOGIN_DATE, IMEI) "
-				+ "VALUES ( ?, ? )";
+		java.sql.Date convertedDate = new java.sql.Date(mLogin.getTime());
+		
+		String sql = String.format("INSERT INTO LOGIN_EVENTS (LOGIN_DATE, IMEI) VALUES ('%s','%s')", convertedDate.toString(), mIMEI);
+		//String sql = "INSERT INTO LOGIN_EVENTS (LOGIN_DATE, IMEI) VALUES ('?','?')";
 
 		LinkedList<Object> parameters = new LinkedList<Object>();
-		parameters.addLast(mLogin);
-		parameters.addLast(mIMEI);
+		/*parameters.addLast(mLogin);
+		parameters.addLast(mIMEI);*/
 		
 		
 		DatabaseAccess.getInstance().executeUpdate(sql, parameters);

@@ -22,14 +22,14 @@ public class LoginResource {
 	@POST
     @Path("/audit")
     @Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
     public Response postAudit(Login login) {
 		APIResponse response = null; 
 		try {
 	    	login.Save();
-	   	    	
 	    	response = new APIResponse(APIResponse.SUCCESS, "Login was inserted to database", null);
 		} catch (Exception ex) {
-			response = new APIResponse(APIResponse.INTERNAL_SERVER_ERROR, "Login wasn't inserted to database", null);
+			response = new APIResponse(APIResponse.INTERNAL_SERVER_ERROR, "Login wasn't inserted to database", ex.getMessage());
 		}
 		
 		return Response.status(response.getStatusCode()).entity(response).build();
@@ -44,14 +44,14 @@ public class LoginResource {
     	
     	try {
     		if (count < 1) {
-        		response = new APIResponse(APIResponse.BAD_REQUEST, "count parameter must be at least 1", null);
+        		response = new APIResponse(APIResponse.BAD_REQUEST, "Could not process request", "'count' parameter must be at least 1");
         	} else {
 	        	List<Login> logins = Login.loadLogins(count);
 	        	
 	        	response = new APIResponse(APIResponse.SUCCESS, "Loaded log successfully", logins);
         	}
         } catch (Exception ex) {
-        	response = new APIResponse(APIResponse.INTERNAL_SERVER_ERROR, ex.getMessage(), null);
+        	response = new APIResponse(APIResponse.INTERNAL_SERVER_ERROR, "Log wasn't loaded", ex.getMessage());
         }
     	
     	return Response.status(response.getStatusCode()).entity(response).build();
@@ -69,7 +69,7 @@ public class LoginResource {
         	
         	response = new APIResponse(APIResponse.SUCCESS, "Statistics were loaded successfully", results);
         } catch (Exception ex) {
-        	response = new APIResponse(APIResponse.INTERNAL_SERVER_ERROR, ex.getMessage(), null);
+        	response = new APIResponse(APIResponse.INTERNAL_SERVER_ERROR, "Statistics weren't loaded", ex.getMessage());
         }
     	
     	return Response.status(response.getStatusCode()).entity(response).build();
