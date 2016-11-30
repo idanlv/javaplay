@@ -1,6 +1,3 @@
-# javaplay
-Yaniv game server
-
 # JavaPlay
 Welcome to JavePlay web service by :  
 Idan Levi and Maya Gilad
