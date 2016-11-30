@@ -1,0 +1,24 @@
+{
+	"local": {
+		"db_connection": {
+			"jdbc_driver": "postgresql",
+			"host": "localhost",
+			"port": "5432",
+			"database": "testdb",
+			"username": "postgres", 
+			"password": "admin"
+		},
+		"logger_level": "ALL"
+	},
+	"production": {
+		"db_connection": {
+			"jdbc_driver": "postgresql",
+			"host": "",
+			"port": "5432",
+			"database": "",
+			"username": "postgres", 
+			"password": "admin"
+		},
+		"logger_level": "ALL"
+	}
+}
