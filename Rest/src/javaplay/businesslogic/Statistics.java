@@ -12,7 +12,13 @@ import com.google.gson.annotations.SerializedName;
 
 import javaplay.db.DatabaseAccess;
 
+/**
+ * This class represents a Statistics entity
+ */
 public class Statistics {
+	/**
+	 * Members
+	 */
 	@JsonProperty("last_login")
 	@SerializedName("last_login")
 	private Login mLastLogin;
@@ -20,15 +26,28 @@ public class Statistics {
 	@SerializedName("count")
 	private int mCount;
 	
+	/**
+	 * Constructor 
+	 */
 	public Statistics() {
 		
 	}
 	
+	/**
+	 * Constructor
+	 * @param lastLogin last login made by a user
+	 * @param count Number of logins made by the user
+	 */
 	public Statistics(Login lastLogin, int count) {
 		mLastLogin = lastLogin;
 		mCount = count;
 	}
 	
+	/**
+	 * Loads statistics of user logins 
+	 * @return List of statistics 
+	 * @throws Exception 
+	 */
 	public static List<Statistics> loadStatistics() throws Exception {
 		String sql = 
 				"SELECT IMEI, MAX(LOGIN_DATE) as LAST_LOGIN, COUNT(*) as COUNT " 
@@ -40,6 +59,7 @@ public class Statistics {
 			
 			List<Statistics> statsResults = new LinkedList<Statistics>();
 			
+			// Scans results and convert them into statistics instance 
 			while (results.next()) {
 				Statistics statistics = new Statistics(
 						new Login(new Date(results.getDate("LAST_LOGIN").getTime()), results.getString("IMEI")),
@@ -54,5 +74,4 @@ public class Statistics {
 			throw new Exception("Could not load logins from database", ex);
 		}
 	}
-
 }

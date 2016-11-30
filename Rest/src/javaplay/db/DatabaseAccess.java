@@ -52,6 +52,14 @@ public class DatabaseAccess {
 		init(db_keys.get("jdbc_driver"));
 	}
 	
+	/**
+	 * Gets a singleton instance 
+	 * @return instance 
+	 * @throws ClassNotFoundException
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	public static DatabaseAccess getInstance() throws ClassNotFoundException, FileNotFoundException, IOException, ParseException {
 		if (mInstance == null) {	
 			mInstance = new DatabaseAccess();
@@ -175,6 +183,14 @@ public class DatabaseAccess {
 		return manipulatedRowCount;
 	}
 	
+	/**
+	 * Adds a parameter to a prepared statement 
+	 * @param statement prepared statement instance
+	 * @param index index of parameter 
+	 * @param parameter parameter's value
+	 * @throws NumberFormatException
+	 * @throws SQLException
+	 */
 	private void addParameter(PreparedStatement statement, int index, Object parameter) throws NumberFormatException, SQLException {
 		if (parameter instanceof Integer) {
 			statement.setInt(index, Integer.parseInt(parameter.toString()));

@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -17,6 +16,9 @@ import com.google.gson.annotations.SerializedName;
 
 import javaplay.db.DatabaseAccess;
 
+/**
+ * This class represents a Login entity
+ */
 public class Login {
 	/**
 	 * Static
@@ -80,31 +82,41 @@ public class Login {
 		java.sql.Date convertedDate = new java.sql.Date(mLogin.getTime());
 		
 		String sql = String.format("INSERT INTO LOGIN_EVENTS (LOGIN_DATE, IMEI) VALUES ('%s','%s')", convertedDate.toString(), mIMEI);
-		//String sql = "INSERT INTO LOGIN_EVENTS (LOGIN_DATE, IMEI) VALUES ('?','?')";
+		//String sql = "INSERT INTO LOGIN_EVENTS (LOGIN_DATE, IMEI) VALUES (?,?)";
 
 		LinkedList<Object> parameters = new LinkedList<Object>();
 		/*parameters.addLast(mLogin);
 		parameters.addLast(mIMEI);*/
 		
-		
 		DatabaseAccess.getInstance().executeUpdate(sql, parameters);
 	}
 	
+	/**
+	 * Load logins
+	 * @param count number of logins to load
+	 * @return Login list
+	 * @throws Exception
+	 */
 	public static List<Login> loadLogins(int count) throws Exception {
 		String sql = String.format("SELECT LOGIN_DATE, IMEI FROM LOGIN_EVENTS ORDER BY LOGIN_DATE DESC LIMIT %d", count);
 		
-		ResultSet results = DatabaseAccess.getInstance().exceute(sql, null);
-		
-		List<Login> loginResults = new LinkedList<Login>();
-		
-		while (results.next()) {
-			Login login = new Login(
-					new Date(results.getDate("LOGIN_DATE").getTime()), 
-					results.getString("IMEI"));
+		try {
+			ResultSet results = DatabaseAccess.getInstance().exceute(sql, null);
 			
-			loginResults.add(login);
+			List<Login> loginResults = new LinkedList<Login>();
+			
+			// Scan all results and creates login instances 
+			while (results.next()) {
+				Login login = new Login(
+						new Date(results.getDate("LOGIN_DATE").getTime()), 
+						results.getString("IMEI"));
+				
+				loginResults.add(login);
+			}
+			
+			return loginResults;
+		} catch (SQLException ex) {
+			throw new Exception("Could not load logins from database", ex);
 		}
-		
-		return loginResults;
 	}
 }

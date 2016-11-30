@@ -11,14 +11,20 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.google.gson.Gson;
-
 import javaplay.businesslogic.Login;
 import javaplay.businesslogic.Statistics;
 import javaplay.utils.APIResponse;
 
+/**
+ * Login resource - handles web requests regarding login 
+ */
 @Path("/login")
 public class LoginResource {
+	/**
+	 * Saves login data into database
+	 * @param login login details 
+	 * @return audit result 
+	 */
 	@POST
     @Path("/audit")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -35,6 +41,11 @@ public class LoginResource {
 		return Response.status(response.getStatusCode()).entity(response).build();
     }
     
+	/**
+	 * Loads login data from database
+	 * @param count number of log rows
+	 * @return login rows
+	 */
     @GET
     @Path("/log/{count}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -57,6 +68,10 @@ public class LoginResource {
     	return Response.status(response.getStatusCode()).entity(response).build();
     }
     
+    /**
+     * Generate statistics of logins
+     * @return statistics 
+     */
     @GET
     @Path("/statistics")
     @Consumes(MediaType.APPLICATION_JSON)
