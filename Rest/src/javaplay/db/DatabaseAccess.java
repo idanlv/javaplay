@@ -1,6 +1,11 @@
 package javaplay.db;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -8,57 +13,70 @@ import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetFactory;
 import javax.sql.rowset.RowSetProvider;
 
+import org.json.simple.parser.ParseException;
+
+import javaplay.utils.Keys;
+
 /**
  *  This is a db access handler for connection management and to executing sql queries
  */
-public class DBHandler {
-	// Logging
-	static Logger _logger = Logger.getLogger(DBHandler.class.getName());
+public class DatabaseAccess {
+	/**
+	 * Static 
+	 */
+	private static Logger _logger = Logger.getLogger(DatabaseAccess.class.getName());
+	private static DatabaseAccess mInstance;
 	
-	// Constants for db access
-	public static final String DB_DRIVER = "org.postgresql.Driver";
-	public static final String DB_ADDRESS_PREFIX = "jdbc:postgresql://";
-	public static final String DB_DEFAULT_HOST = "localhost";
-	public static final int DB_DEFAULT_PORT = 5432;
-	public static final String DB_DEFAULT_NAME = "testdb";
-	public static final String DB_DEFAULT_USER = "postgres";
-	public static final String DB_DEFAULT_PASSWORD = "admin";
-	
-	// Class members
+	/**
+	 * Members
+	 */
 	private String _connectionString;
-	private String _username;
-	private String _password;
 	private Connection _con;
 	
 	/**
 	 *  DBHandler constructor 
-	 * @param host - db host name or ip
-	 * @param port - db port
-	 * @param dbName - db name
-	 * @param username - db user name
-	 * @param password - db password
-
+	 * @throws ParseException 
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
 	 */
-	public DBHandler (String host, int port, String dbName, String username, String password) throws ClassNotFoundException {
-		init();
+	private DatabaseAccess () throws ClassNotFoundException, FileNotFoundException, IOException, ParseException {		
+		Map<String, String> db_keys = Keys.getMap("db_connection");
 		
-		_connectionString = DB_ADDRESS_PREFIX + host +":"+ port +"/"+ dbName;
+		_connectionString = String.format("jdbc:%s://%s/%s?user=%s&password=%s&useSSL=False", 
+				db_keys.get("driver"),
+				db_keys.get("host"),
+				db_keys.get("database"),
+				db_keys.get("username"),
+				db_keys.get("password"));
 		
-		_username = username;
-		_password = password;
+		init(db_keys.get("jdbc_driver"));
+	}
+	
+	/**
+	 * Gets a singleton instance 
+	 * @return instance 
+	 * @throws ClassNotFoundException
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws ParseException
+	 */
+	public static DatabaseAccess getInstance() throws ClassNotFoundException, FileNotFoundException, IOException, ParseException {
+		if (mInstance == null) {	
+			mInstance = new DatabaseAccess();
+		}
 		
-		
+		return mInstance;
 	}
 	
 	/**
 	 * Initialize db driver
 	 * @throws ClassNotFoundException - if the db driver class cannot be located
 	 */
-	private void init() throws ClassNotFoundException {
+	private void init(String dbDriver) throws ClassNotFoundException {
 		try {
-			Class.forName(DB_DRIVER);
+			Class.forName(dbDriver);
 		} catch (ClassNotFoundException ex){
-			_logger.log(Level.SEVERE, "Error: unable to load db driver class \"" + DB_DRIVER + "\"");
+			_logger.log(Level.SEVERE, "Error: unable to load db driver class \"" + dbDriver + "\"");
 			throw ex;
 		}
 	}
@@ -70,7 +88,7 @@ public class DBHandler {
 	 */
 	private boolean openDBConnection() throws SQLException {
 		if (_con == null || _con.isClosed()) {
-			_con = DriverManager.getConnection(_connectionString,_username, _password);
+			_con = DriverManager.getConnection(_connectionString);			
 			return true;
 		}
 		return false;
@@ -102,17 +120,24 @@ public class DBHandler {
 	 * the given SQL statement produces anything other than a single ResultSet object,
 	 * the method is called on a PreparedStatement or CallableStatement
 	 */
-	public ResultSet exceute(String sql) throws SQLException {		
+	public ResultSet exceute(String sql, List<Object> parameters) throws SQLException {		
 		// Using RowSetFactory for CachedRowSet implementation
 		RowSetFactory rowSetFactory = RowSetProvider.newFactory();
 		
-		Statement stmt = null;
+		PreparedStatement stmt = null;
 		ResultSet rs = null;
-		CachedRowSet crs = rowSetFactory.createCachedRowSet();;
+		CachedRowSet crs = rowSetFactory.createCachedRowSet();
 		
 		try {
 			openDBConnection();
-			stmt = _con.createStatement();
+			stmt = _con.prepareStatement(sql);
+			
+			if (parameters != null) {
+				for (int i = 0; i < parameters.size(); i++) {
+					addParameter(stmt, i + 1, parameters.get(i));
+				}
+			}
+			
 			rs = stmt.executeQuery(sql);
 			crs.populate(rs);
 		} finally {
@@ -122,6 +147,8 @@ public class DBHandler {
 		}
 		return crs;
 	}
+	
+
 	
 	/**
 	 * Execute sql and return the manipulated rows count
@@ -133,14 +160,21 @@ public class DBHandler {
 	 * the given SQL statement produces a ResultSet object,
 	 * the method is called on a PreparedStatement or CallableStatement
 	 */
-	public int executeUpdate(String sql) throws SQLException {
-		Statement stmt = null;
+	public int executeUpdate(String sql, List<Object> parameters) throws SQLException, NumberFormatException {
+		PreparedStatement stmt = null;
 		int manipulatedRowCount = -1;
 		
 		try {
 			openDBConnection();
-			stmt = _con.createStatement();
-			manipulatedRowCount = stmt.executeUpdate(sql);			
+			stmt = _con.prepareStatement(sql);
+			
+			if (parameters != null) {
+				for (int i = 0; i < parameters.size(); i++) {
+					addParameter(stmt, i + 1, parameters.get(i));
+				}
+			}
+
+			manipulatedRowCount = stmt.executeUpdate();			
 		} finally {
 			if (stmt != null) {stmt.close();}
 			closeDBConnection();
@@ -150,66 +184,21 @@ public class DBHandler {
 	}
 	
 	/**
-	 * create user table
+	 * Adds a parameter to a prepared statement 
+	 * @param statement prepared statement instance
+	 * @param index index of parameter 
+	 * @param parameter parameter's value
+	 * @throws NumberFormatException
 	 * @throws SQLException
 	 */
-	public void createTableUsers() throws SQLException {
-		Statement stmt = null; 
-		try {
-			openDBConnection();
-			stmt = _con.createStatement();
-			String sql = "CREATE TABLE IF NOT EXISTS USERS " +
-					"(ID	SERIAL  NOT NULL PRIMARY	KEY," + 
-					" USER_NAME	TEXT	NOT	NULL, " +
-					" PASSWORD	TEXT	NOT NULL, " +
-					" EMAIL	TEXT	NOT NULL)";
-			stmt.executeUpdate(sql);
-		} finally {
-			if (stmt != null) {stmt.close();}
-			closeDBConnection();
-		}
-	}
-	
-	/**
-	 * add x number of demo users
-	 * @param count for number of users
-	 * @throws SQLException
-	 */
-	public void addUsers(int count) throws SQLException {
-		PreparedStatement ps = null;
-		
-		try {
-			openDBConnection();
-			String sql = "INSERT INTO USERS(USER_NAME, PASSWORD, EMAIL) VALUES(?, ?, ?)";
-			ps = _con.prepareStatement(sql);
-			
-			for (int i = 0; i < count; i++) {
-				ps.setString(1, "User" + i);
-				ps.setString(2, "Pass" + i);
-				ps.setString(3, "user" + i +"@mail.com");
-				ps.addBatch();
-			}
-			ps.executeBatch();
-		} finally {
-			if (ps != null) {ps.close();}
-			closeDBConnection();
-		}
-	}
-	
-	/**
-	 * clear user table
-	 * @throws SQLException
-	 */
-	public void dropUsers() throws SQLException {
-		Statement stmt = null;
-		try {
-			openDBConnection();
-			stmt = _con.createStatement();
-			String sql = "DROP TABLE USERS";
-			stmt.executeUpdate(sql);
-		} finally {
-			if (stmt != null) {stmt.close();}
-			closeDBConnection();
+	private void addParameter(PreparedStatement statement, int index, Object parameter) throws NumberFormatException, SQLException {
+		if (parameter instanceof Integer) {
+			statement.setInt(index, Integer.parseInt(parameter.toString()));
+		} else if (parameter instanceof String) {
+			statement.setString(index, parameter.toString());
+		} else if (parameter instanceof Date) {
+			java.sql.Date convertedDate = new java.sql.Date(((Date)parameter).getTime());
+			statement.setDate(index, convertedDate);
 		}
 	}
 }

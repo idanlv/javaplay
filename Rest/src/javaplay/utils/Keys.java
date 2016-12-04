@@ -12,10 +12,14 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-
+/**
+ * This class handles loading of keys and password
+ */
 public class Keys {
+	/**
+	 * Members
+	 */
 	private static Logger _logger = Logger.getLogger(Keys.class.getName()); 
-	
 	private static String _environment = null;
 	private static JSONObject _keys = null; 
 	private static final String DEFAULT_KEYS_FILE = "keys.json";
@@ -70,8 +74,15 @@ public class Keys {
 		}
 	}
 	
+	/**
+	 * Retrieve a value for given key
+	 * @param key wanted key
+	 * @return value
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	private static Object get(String key) throws FileNotFoundException, IOException, ParseException {
-		// TODO: Add start configuration that does this
 		if (_environment == null) {
 			loadEnvironment();
 			loadKeysFile();
@@ -91,11 +102,17 @@ public class Keys {
 
 	}
 	
+	/**
+	 * Loads key file
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	private static void loadKeysFile() throws FileNotFoundException, IOException, ParseException {
 		String value = System.getenv(JAVAPLAY_KEYS_FILE);
         
 		if (value == null) {
-			_logger.log(Level.WARNING, "Could not find environment variable '%s', using default instead", JAVAPLAY_KEYS_FILE);
+			_logger.log(Level.WARNING, String.format("Could not find environment variable '%s', using default instead", JAVAPLAY_KEYS_FILE));
 			value = DEFAULT_KEYS_FILE;
 		} 
         
@@ -104,11 +121,14 @@ public class Keys {
 		_keys = (JSONObject)parser.parse(new FileReader(value));
 	}
 	
+	/**
+	 * Load environment information from environment variables
+	 */
 	private static void loadEnvironment() {
 		_environment = System.getenv(JAVAPLAY_ENV);
         
 		if (_environment == null) {
-			_logger.log(Level.WARNING, "Could not find environment variable '%s', using default instead", JAVAPLAY_ENV);
+			_logger.log(Level.WARNING, String.format("Could not find environment variable '%s', using default instead", JAVAPLAY_ENV));
 			_environment = DEFAULT_ENVIRONMENT;
 		}
 	}
