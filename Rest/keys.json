@@ -1,23 +1,23 @@
 {
 	"local": {
 		"db_connection": {
-			"jdbc_driver": "postgresql",
-			"host": "localhost",
-			"port": "5432",
-			"database": "testdb",
-			"username": "postgres", 
-			"password": "admin"
+			"jdbc_driver": "com.mysql.cj.jdbc.Driver",
+			"driver": "mysql",
+			"host": "104.154.87.33",
+			"database": "javaplay",
+			"username": "javadb", 
+			"password": "iddqd"
 		},
 		"logger_level": "ALL"
 	},
 	"production": {
 		"db_connection": {
-			"jdbc_driver": "postgresql",
-			"host": "",
-			"port": "5432",
-			"database": "",
-			"username": "postgres", 
-			"password": "admin"
+			"jdbc_driver": "com.mysql.cj.jdbc.Driver",
+			"driver": "mysql",
+			"host": "104.154.87.33",
+			"database": "javaplay",
+			"username": "javadb", 
+			"password": "iddqd"
 		},
 		"logger_level": "ALL"
 	}
