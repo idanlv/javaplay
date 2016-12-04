@@ -9,6 +9,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.codehaus.jackson.annotate.JsonAutoDetect.Visibility;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.json.simple.parser.ParseException;
 
@@ -19,6 +21,7 @@ import javaplay.db.DatabaseAccess;
 /**
  * This class represents a Login entity
  */
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class Login {
 	/**
 	 * Static
