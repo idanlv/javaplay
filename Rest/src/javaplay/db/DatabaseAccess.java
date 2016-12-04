@@ -174,7 +174,7 @@ public class DatabaseAccess {
 				}
 			}
 
-			manipulatedRowCount = stmt.executeUpdate(sql);			
+			manipulatedRowCount = stmt.executeUpdate();			
 		} finally {
 			if (stmt != null) {stmt.close();}
 			closeDBConnection();
